@@ -17,6 +17,9 @@ This project sets up a Splunk Universal Forwarder (UF) in Docker to collect and 
 ```bash
 docker-compose up -d
 
+Generate traffic:
+
+curl http://localhost:8080
 
 Then search in Splunk:
 
