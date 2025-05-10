@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  splunk:
+    image: splunk/splunk:9.2.0
+    container_name: splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=password123
+    ports:
+      - "8000:8000"  # Splunk UI
+      - "9997:9997"  # Receiving port for Universal Forwarder
+    volumes:
+      - splunk-data:/opt/splunk/var
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx_logs:/var/log/nginx
+    logging:
+      driver: "none"
+
+  splunk-uf:
+    image: splunk/universalforwarder:9.2.0
+    container_name: splunk-uf
+    depends_on:
+      - splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=password123
+    volumes:
+      - ./nginx_logs:/nginx_logs:ro
+      - ./config:/opt/splunkforwarder/etc/system/local
+    entrypoint: >
+      /bin/bash -c "
+      /sbin/entrypoint.sh start;
+      tail -f /dev/null
+      "
+
+volumes:
+  splunk-data:
